@@ -354,7 +354,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 else:
                 # 超过惩罚区间时，给予惩罚，惩罚值与偏移量的差值成正比
                     reward = -10000 * (offset - punishment_threshold) ** 2  # 惩罚力度逐渐加大   
-                reward += 10 * reward()            
+                reward += 10 * self.reward()            
         elif self.steps_beyond_terminated is None:
             # Pole just fell!
             self.steps_beyond_terminated = 0
