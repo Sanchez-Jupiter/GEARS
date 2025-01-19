@@ -334,32 +334,30 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.steps_beyond_terminated += 1
             reward = +1000.0
         '''
-        # 获取当前偏移量，可以是状态变量的某个部分，比如角度
-        offset = abs(self.state[0])     
+        reward = 0
+        offset = abs(self.state[0])  # 横向偏移
+        angle = self.state[2]        # 杆子的角度（假设是与垂直方向的偏离角度）
+        angle_velocity = self.state[3]  # 杆子的角速度
+
         max_distance = 0.01             # 设置最大奖励距离
         punishment_threshold = 0.05     # 设置惩罚开始的距离
         max_reward = 100                # 最大奖励值
-
+        balance_threshold = 0.02        # 设置杆子接近平衡状态的角度范围
+        balance_reward = 5000             # 接近平衡时的奖励
 
         if not terminated:
             if off_track:
-                reward = -10000.0 # (GEARS (?))
+                reward = -10000.0  # 超出轨道的惩罚
             else:
-                if offset <= max_distance:
-                # 奖励根据偏移量线性递减
-                    reward = 100 * max_reward * (1 - offset / max_distance)  # 随着偏移增大，奖励逐渐减小
-                elif offset > max_distance and offset <= punishment_threshold:
-                # 超过最大奖励距离但未进入惩罚区间时，奖励为零
-                    reward = 0
-                else:
-                # 超过惩罚区间时，给予惩罚，惩罚值与偏移量的差值成正比
-                    reward = -10000 * (offset - punishment_threshold) ** 2  # 惩罚力度逐渐加大   
-                reward += 10 * self.reward()            
+                # 添加角度奖励，杆子越接近垂直，奖励越高
+                if abs(angle) <= balance_threshold:
+                    reward += balance_reward  # 当角度接近垂直时，增加奖励
+                reward += 100 * (3.14 / 2 - angle) 
+                reward += 10 * self.reward()  # 其他奖励（例如，系统提供的额外奖励）
         elif self.steps_beyond_terminated is None:
             # Pole just fell!
             self.steps_beyond_terminated = 0
-#            reward = reward(self.state)
-            reward = 100
+            reward = 100  # 如果杆子倒下，给予较高的初始奖励（根据需求可以调整）
         else:
             if self.steps_beyond_terminated == 0:
                 logger.warn(
@@ -369,7 +367,8 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                     "True' -- any further steps are undefined behavior."
                 )
             self.steps_beyond_terminated += 1
-            reward = +1000.0
+            reward = 1000.0  # 额外奖励（可以根据需求调整）
+
         
 
 
