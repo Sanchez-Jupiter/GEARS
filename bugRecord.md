@@ -32,3 +32,7 @@ TypeError: 'numpy.float64' object is not callable
 cause: 
 
     reward += 10 * self.reward() instead of reward += 10 * reward() 
+
+
+
+容易产生局部最优

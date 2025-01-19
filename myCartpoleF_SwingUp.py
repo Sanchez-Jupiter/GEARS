@@ -308,8 +308,9 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
         # 1 if pole stands up - can turn off
         # 1 if cart is off track - can turn off and reset
-        terminated = bool(abs(theta) < self.theta_threshold_radians / 4) 
+        # terminated = bool(abs(theta) < self.theta_threshold_radians / 4) 
         off_track = bool(abs(x) > self.x_threshold) 
+        terminated = off_track
         # Original reward function
         '''
         if not terminated:
@@ -346,29 +347,16 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         balance_reward = 5000             # 接近平衡时的奖励
 
         if not terminated:
-            if off_track:
-                reward = -10000.0  # 超出轨道的惩罚
+            if bool(abs(theta) < self.theta_threshold_radians / 4) :
+                reward += balance_reward
+                reward -= 10 * self.reward()
             else:
                 # 添加角度奖励，杆子越接近垂直，奖励越高
-                if abs(angle) <= balance_threshold:
-                    reward += balance_reward  # 当角度接近垂直时，增加奖励
                 reward += 100 * (3.14 / 2 - angle) 
-                reward += 10 * self.reward()  # 其他奖励（例如，系统提供的额外奖励）
-        elif self.steps_beyond_terminated is None:
-            # Pole just fell!
-            self.steps_beyond_terminated = 0
-            reward = 100  # 如果杆子倒下，给予较高的初始奖励（根据需求可以调整）
+                reward += 100 * self.reward()  # 其他奖励（例如，系统提供的额外奖励）
         else:
-            if self.steps_beyond_terminated == 0:
-                logger.warn(
-                    "You are calling 'step()' even though this "
-                    "environment has already returned terminated = True. You "
-                    "should always call 'reset()' once you receive 'terminated = "
-                    "True' -- any further steps are undefined behavior."
-                )
-            self.steps_beyond_terminated += 1
-            reward = 1000.0  # 额外奖励（可以根据需求调整）
-
+            reward = -10000.0  # 超出轨道的惩罚
+            
         
 
 
@@ -396,6 +384,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     # 重置环境的状态，并准备好进行新的 episode。
     # 重新初始化状态、设置随机种子，并返回一个初始的观察。
     def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None, ):
+        print("now Reset")
         super().reset(seed = seed)
         # 可选的随机种子，确保实验的可重复性。
         # 传入该参数时，可以在生成随机数时使用相同的种子，从而使得每次训练或测试时生成的随机数一致。
