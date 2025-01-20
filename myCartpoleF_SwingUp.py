@@ -347,9 +347,9 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         balance_reward = 5000             # 接近平衡时的奖励
 
         if not terminated:
-            if bool(abs(theta) < self.theta_threshold_radians / 4) :
+            if bool(abs(theta) < self.theta_threshold_radians ) :
                 reward += balance_reward
-                reward -= 10 * self.reward()
+                reward -= 10 * self.reward() 
             else:
                 # 添加角度奖励，杆子越接近垂直，奖励越高
                 reward += 100 * (3.14 / 2 - angle) 
