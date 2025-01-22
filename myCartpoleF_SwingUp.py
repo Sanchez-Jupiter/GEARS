@@ -155,7 +155,11 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # 用于追踪在回合结束后，代理是否继续进行步骤。
         # 当环境的状态为 terminated = True 时，代理应该调用 reset() 来重置环境。
         # 如果继续调用 step()，应该根据这个变量来检测并处理。
-    
+
+        self.previous_force = 0
+        self.previous_theta = 0
+        self.previous_isClose = 0
+        self.previous_total = 0
     # 计算状态方程的右侧，也就是一个描述倒立摆（CartPole）系统动力学的函数。
     # 根据当前的状态（包括小车的位置、速度和杆子的角度、角速度）以及外部施加的力，返回系统的加速度（即状态的变化率）。
     # 函数的输出用于在仿真中更新系统状态。
@@ -276,14 +280,45 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # self.state = (x, x_dot, theta, theta_dot)
         return np.array( (x, x_dot,theta, theta_dot), dtype = np.float32).flatten()
 
-    def reward(self):
-        
-        x, x_dot, theta, theta_dot = self.state
-        energy_total = 2/3 * self.masspole * self.length ** 2 * theta_dot + self.masspole * self.length * self.gravity * (math.cos(theta) - 1); 
-        lyapunov_2 = 1/2 * ( energy_total )**2 + 1e-4 * (1 - (math.cos(theta))**3 ); 
+    import math
 
-        return energy_total
-        #(GEARS (?))
+    def reward(self, terminated, off_track):
+        # 从状态中提取信息
+        x, x_dot, theta, theta_dot = self.state
+        x_bound = 0.23
+        B = 0
+        # 判定是否越界
+        if abs(x) > x_bound:
+            B = 1
+        reward = 0
+        # 基本奖励计算（考虑位置、速度、力的控制）
+        #reward = -0.1 * (5 * (theta + math.pi) ** 2 + x ** 2 + 0.05 * self.previous_force ** 2) - 100 * B
+    
+        # **奖励保持竖直**
+        # 对角度和角速度接近零时给予奖励，表示保持竖直和稳定
+        if math.cos(theta) > 0.95 :
+            if self.previous_isClose == 1:
+                reward += 100
+                self.previous_total += 100
+            self.previous_isClose = 1
+            reward -= 10 * math.cos(theta) * abs(theta_dot)  # 角速度偏离越大，惩罚越大
+    
+        # **角度偏离惩罚**
+        # 对角度偏离竖直位置的惩罚加强
+        else:
+            reward += 100 * (math.cos(theta) - math.cos(self.previous_theta)) # 角度偏离越大，惩罚越大
+            if self.previous_isClose == 1:
+                reward -= self.previous_total
+            self.previous_isClose = 0
+    
+        # **失败惩罚**
+        if off_track:
+            reward -= 200  # 大惩罚，表示失败
+    
+        return reward
+
+
+
         
     # 用于执行一次环境的状态更新，并返回新的观察、奖励、终止标志和一些额外信息
     # !!this block may contain bugs!!
@@ -305,12 +340,10 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         
         # 状态信息提取
         x, x_dot, theta, theta_dot = self.state
-
+        print(math.cos(theta))
+        # print(self.state)
         # 1 if pole stands up - can turn off
-        # 1 if cart is off track - can turn off and reset
-        # terminated = bool(abs(theta) < self.theta_threshold_radians / 4) 
-        off_track = bool(abs(x) > self.x_threshold) 
-        terminated = off_track
+
         # Original reward function
         '''
         if not terminated:
@@ -335,28 +368,12 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.steps_beyond_terminated += 1
             reward = +1000.0
         '''
-        reward = 0
-        offset = abs(self.state[0])  # 横向偏移
-        angle = self.state[2]        # 杆子的角度（假设是与垂直方向的偏离角度）
-        angle_velocity = self.state[3]  # 杆子的角速度
-
-        max_distance = 0.01             # 设置最大奖励距离
-        punishment_threshold = 0.05     # 设置惩罚开始的距离
-        max_reward = 100                # 最大奖励值
-        balance_threshold = 0.02        # 设置杆子接近平衡状态的角度范围
-        balance_reward = 5000             # 接近平衡时的奖励
-
-        if not terminated:
-            if bool(abs(theta) < self.theta_threshold_radians ) :
-                reward += balance_reward
-                reward -= 10 * self.reward() 
-            else:
-                # 添加角度奖励，杆子越接近垂直，奖励越高
-                reward += 100 * (3.14 / 2 - angle) 
-                reward += 100 * self.reward()  # 其他奖励（例如，系统提供的额外奖励）
-        else:
-            reward = -10000.0  # 超出轨道的惩罚
-            
+          # 1 if pole stands up - can turn off
+        off_track = bool(abs(x) > self.x_threshold)
+        terminated = off_track
+        reward = self.reward(terminated, off_track)
+        self.previous_force = force
+        self.previous_theta = theta
         
 
 
