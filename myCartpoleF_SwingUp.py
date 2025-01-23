@@ -309,6 +309,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             reward += 100 * (math.cos(theta) - math.cos(self.previous_theta)) # 角度偏离越大，惩罚越大
             if self.previous_isClose == 1:
                 reward -= self.previous_total
+                self.previous_total = 0
             self.previous_isClose = 0
     
         # **失败惩罚**
@@ -340,8 +341,8 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         
         # 状态信息提取
         x, x_dot, theta, theta_dot = self.state
-        print(math.cos(theta))
-        # print(self.state)
+        # print(math.cos(theta))
+        print(self.state)
         # 1 if pole stands up - can turn off
 
         # Original reward function
