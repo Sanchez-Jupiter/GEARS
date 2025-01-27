@@ -160,6 +160,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         self.previous_theta = 0
         self.previous_isClose = 0
         self.previous_total = 0
+        self.previous_x = 0
     # 计算状态方程的右侧，也就是一个描述倒立摆（CartPole）系统动力学的函数。
     # 根据当前的状态（包括小车的位置、速度和杆子的角度、角速度）以及外部施加的力，返回系统的加速度（即状态的变化率）。
     # 函数的输出用于在仿真中更新系统状态。
@@ -296,13 +297,13 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     
         # **奖励保持竖直**
         # 对角度和角速度接近零时给予奖励，表示保持竖直和稳定
-        if math.cos(theta) > 0.95 :
+        if math.cos(theta) > 0.999 :
             if self.previous_isClose == 1:
                 reward += 100
                 self.previous_total += 100
             self.previous_isClose = 1
             reward -= 10 * math.cos(theta) * abs(theta_dot)  # 角速度偏离越大，惩罚越大
-    
+            reward -= 100 * (x - self.previous_x)
         # **角度偏离惩罚**
         # 对角度偏离竖直位置的惩罚加强
         else:
@@ -314,7 +315,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     
         # **失败惩罚**
         if off_track:
-            reward -= 200  # 大惩罚，表示失败
+            reward = -200  # 大惩罚，表示失败
     
         return reward
 
@@ -341,7 +342,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         
         # 状态信息提取
         x, x_dot, theta, theta_dot = self.state
-        # print(math.cos(theta))
+        print(x)
         print(self.state)
         # 1 if pole stands up - can turn off
 
@@ -369,13 +370,12 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
             self.steps_beyond_terminated += 1
             reward = +1000.0
         '''
-          # 1 if pole stands up - can turn off
         off_track = bool(abs(x) > self.x_threshold)
         terminated = off_track
         reward = self.reward(terminated, off_track)
         self.previous_force = force
         self.previous_theta = theta
-        
+        self.previous_x = x
 
 
 
