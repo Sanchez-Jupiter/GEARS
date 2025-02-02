@@ -284,36 +284,31 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
     import math
 
     def reward(self, terminated, off_track):
-        # 从状态中提取信息
         x, x_dot, theta, theta_dot = self.state
+
         x_bound = 0.23
         B = 0
-        # 判定是否越界
         if abs(x) > x_bound:
             B = 1
-        reward = 0
+        
+        
         # 基本奖励计算（考虑位置、速度、力的控制）
-        #reward = -0.1 * (5 * (theta + math.pi) ** 2 + x ** 2 + 0.05 * self.previous_force ** 2) - 100 * B
-    
-        # **奖励保持竖直**
-        # 对角度和角速度接近零时给予奖励，表示保持竖直和稳定
+        # reward = -0.1 * (5 * (theta + math.pi) ** 2 + x ** 2 + 0.05 * self.previous_force ** 2) - 100 * B
+        reward = 0
         if math.cos(theta) > 0.999 :
             if self.previous_isClose == 1:
                 reward += 100
                 self.previous_total += 100
             self.previous_isClose = 1
-            reward -= 10 * math.cos(theta) * abs(theta_dot)  # 角速度偏离越大，惩罚越大
+            reward -= 10 * math.cos(theta) * abs(theta_dot)  
             reward -= 100 * (x - self.previous_x)
-        # **角度偏离惩罚**
-        # 对角度偏离竖直位置的惩罚加强
         else:
             reward += 100 * (math.cos(theta) - math.cos(self.previous_theta)) # 角度偏离越大，惩罚越大
             if self.previous_isClose == 1:
                 reward -= self.previous_total
                 self.previous_total = 0
             self.previous_isClose = 0
-    
-        # **失败惩罚**
+
         if off_track:
             reward = -200  # 大惩罚，表示失败
     
