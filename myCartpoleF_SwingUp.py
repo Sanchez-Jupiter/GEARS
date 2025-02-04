@@ -331,7 +331,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # Nikki modified the following force from continuous_mountain_car
         # force = min(max(action[0], -self.max_action), self.max_action) * self.max_action
         force = self.force_mag * float(action)
-        force = math.tanh(force) * 3.0
+        #force = math.tanh(force) * 3.0
         # 根据当前的力计算更新后的系统状态
         self.state = self.stepSwingUp(force)
         
