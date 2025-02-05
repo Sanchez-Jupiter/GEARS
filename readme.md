@@ -3,11 +3,11 @@
 #### Background
 The CartPole problem is a classic control problem in reinforcement learning and robotics. It involves swinging up and balancing a pole attached to a cart that moves along a one-dimensional track as is shown in figure. The goal is to keep the pole upright by applying forces to the cart. The system is inherently unstable, meaning that if no corrective action is taken, the pole will eventually fall over. The task is to design a controller that can swing the pole up and keep it balanced for as long as possible. 
 
-![cartpole]()
+![cartpole](https://github.com/Sanchez-Jupiter/GEARS/blob/master/Cart-Pole%20Model%20Example2.png)
 #### Main Process
 We chose the Deep Deterministic Policy Gradient (DDPG) algorithm to train the model in which we focus on designing the reward function and the structure of the policy network. After achieving a relatively good result on simulation environment, we tried to apply the model on the real lab where we modified the previous curcuit of Linear Quadratic Regulator(LQR) and added the trained model to it as is shown in the figure.
 
-![curcuit]()
+![curcuit](https://github.com/Sanchez-Jupiter/GEARS/blob/master/curcuit.PNG)
 
 In terms of reward function, we decided to encourage the progress and punish the retrogress as is shown below. 
 
