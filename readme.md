@@ -1,5 +1,5 @@
 ### The NCSU GEARS research on Cartpole Problem 
-![performance](https://github.com/Sanchez-Jupiter/GEARS/blob/master/great%20balance.gif)
+
 #### Background
 The CartPole problem is a classic control problem in reinforcement learning and robotics. It involves swinging up and balancing a pole attached to a cart that moves along a one-dimensional track as is shown in figure. The goal is to keep the pole upright by applying forces to the cart. The system is inherently unstable, meaning that if no corrective action is taken, the pole will eventually fall over. The task is to design a controller that can swing the pole up and keep it balanced for as long as possible. 
 
@@ -22,5 +22,7 @@ $$
 
 #### result and current challenge
 Our model can swing up and keep balance in the simulation environment, the performance is shown in github, you can scan the QR code to see it.
+
+![performance](https://github.com/Sanchez-Jupiter/GEARS/blob/master/great%20balance.gif)
 
 We implement our model to the real lab, but the wheel broke at a certain point while running. After observation and analysis, we think it is due to the sudden change of force, and we are still working on this by trying to modify our reward function to punish the sudden change of force.
