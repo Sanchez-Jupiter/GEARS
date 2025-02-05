@@ -283,7 +283,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
 
     import math
 
-    def reward(self, terminated, off_track):
+    def reward(self, terminated, off_track, force):
         x, x_dot, theta, theta_dot = self.state
 
         x_bound = 0.23
@@ -308,10 +308,10 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 reward -= self.previous_total
                 self.previous_total = 0
             self.previous_isClose = 0
-
+        reward -= 10 * (force - self.previous_force)
         if off_track:
             reward = -200  # 大惩罚，表示失败
-    
+
         return reward
 
 
@@ -367,7 +367,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         '''
         off_track = bool(abs(x) > self.x_threshold)
         terminated = off_track
-        reward = self.reward(terminated, off_track)
+        reward = self.reward(terminated, off_track, force)
         self.previous_force = force
         self.previous_theta = theta
         self.previous_x = x
