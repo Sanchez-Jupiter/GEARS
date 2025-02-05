@@ -20,7 +20,7 @@ b_5 & \text{if }  \text{ } \text{ } \text{ } offtrack \\
 \end{cases}
 $$
 
-#### result and current challenge
+#### Result and Current Challenge
 Our model can swing up and keep balance in the simulation environment, the performance is shown in github, you can scan the QR code to see it.
 
 ![performance](https://github.com/Sanchez-Jupiter/GEARS/blob/master/great%20balance.gif)
