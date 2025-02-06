@@ -338,6 +338,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # 状态信息提取
         x, x_dot, theta, theta_dot = self.state
         print(force)
+        print(theta)
         # 1 if pole stands up - can turn off
 
         # Original reward function
