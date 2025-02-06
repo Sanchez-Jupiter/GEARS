@@ -308,7 +308,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
                 reward -= self.previous_total
                 self.previous_total = 0
             self.previous_isClose = 0
-        reward -= 10 * (force - self.previous_force)
+        reward -= abs(force - self.previous_force) if abs(force - self.previous_force) > 10 else 0
         if off_track:
             reward = -200  # 大惩罚，表示失败
 
@@ -337,8 +337,7 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         
         # 状态信息提取
         x, x_dot, theta, theta_dot = self.state
-        print(x)
-        print(self.state)
+        print(force)
         # 1 if pole stands up - can turn off
 
         # Original reward function
@@ -419,12 +418,12 @@ class CartPoleSwingUp(gym.Env[np.ndarray, Union[int, np.ndarray]]):
         # - [0, 0, math.pi, 0] 是平移操作，将 theta 初始化为 pi，即摆杆开始时垂直于小车。
         # 最终生成的状态值存储在 self.state 中。
         # 状态是一个包含 4 个元素的数组，分别是 x、x_dot、theta 和 theta_dot。
-        self.state = np.array( self.np_random.uniform(low = low, high = high, size = (4, )) - [0, 0, math.pi, 0] ).flatten()
+        self.state = np.array( [0, 0, math.pi, 0] ).flatten()
         # 在新的回合开始时，steps_beyond_terminated 被设为 None，用于追踪在终止状态后的额外步骤。
         self.steps_beyond_terminated = None
         
         x, x_dot, theta, theta_dot = self.state
-
+        print(self.state)
         obs = np.array( (np.sin(theta), np.cos(theta), theta_dot, x, x_dot), dtype = np.float32).flatten() 
         # I think (?) might need rotation
         # to go from observation (obs) angles to state space angle, need the following transformation 
